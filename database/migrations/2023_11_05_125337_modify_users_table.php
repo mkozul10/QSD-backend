@@ -12,11 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table("users", function (Blueprint $table) {
-            $table->dropColumn("role");
-            $table->string("address");
-            $table->string("city");
-            $table->string("zip_code");
-            $table->string("phone");
+            $table->foreign('roles_id')->references('id')->on('roles');
         });
     }
 
@@ -26,11 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table("users", function (Blueprint $table) {
-            $table->string("role");
-            $table->dropColumn("address");
-            $table->dropColumn("city");
-            $table->dropColumn("zip_code");
-            $table->dropColumn("phone");
+            $table->dropForeign(['roles_id']);
         });
     }
 };
