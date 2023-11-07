@@ -20,19 +20,11 @@ return new class extends Migration
            // $table->foreign('transaction_id')->references('id')->on('orders') //odakle uzimamo transaction id?
            //->onUpdate('cascade')->onDelete('cascade');
 
-            $table->bigInteger('transaction_id');
 
-            $table->float('total_price');
             
 
-            $table->foreign('user_id')->references('id')->on('user')
+            $table->foreignId('users_id')->references('id')->on('users')
             ->onUpdate('cascade')->onDelete('cascade');
-
-            
-
-            $table->string('state');
-            $table->longText('comment');
-            $table->string('guest_email');
         });
 
     }
