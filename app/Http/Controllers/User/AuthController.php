@@ -143,21 +143,19 @@ class AuthController extends Controller
         $oldKey = DB::table("users_validation_keys")
                     ->where('users_id', $user->id)
                     ->first();
-        $newKey = $this->generateNumber();
+
         if($oldKey){
             DB::table("users_validation_keys")
                     ->where('users_id', $user->id)
                     ->delete();
-            UsersValidationKeys::create([
-                'validation_key' => $newKey, 
-                'users_id' => $user->id
-            ]);
-        } else {
-            UsersValidationKeys::create([
-                'validation_key' => $newKey, 
-                'users_id' => $user->id
-            ]);
         }
+
+        $newKey = $this->generateNumber();
+        UsersValidationKeys::create([
+            'validation_key' => $newKey, 
+            'users_id' => $user->id
+        ]);
+
         Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
             $message->from('qsdshop@gmail.com', 'QSD WebShop')
                 ->to($user->email, $user->name) 
