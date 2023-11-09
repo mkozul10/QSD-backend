@@ -211,4 +211,34 @@ class AuthController extends Controller
             "error" => "Invalid validation key."
         ],400);
     }
+
+    public function changePassword(Request $request){
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => ['required', Password::min(8)->letters()->symbols()]
+        ]);
+
+        $user = Auth::user();
+        if(Hash::check($request->old_password, $user->getAuthPassword())){
+            if(Hash::check($request->new_password, $user->getAuthPassword())){
+                return response()->json([
+                    "message" => "New password must be different from than last one."
+                ],400);
+            }
+            DB::table('password_resets')
+                ->insert([
+                    'users_id' => $user->id,
+                    'old_password' => $request->old_password,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+
+            DB::table("users")
+                ->where("id", $user->id)
+                ->update(['password' => Hash::make($request->new_password)]);
+        
+            return response()->json(["message" => "New password set successfully!"],200);
+        }
+        else return response()->json(["message" => "Wrong the old password."],403);
+    }
 }
