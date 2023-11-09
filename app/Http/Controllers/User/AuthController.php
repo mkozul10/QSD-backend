@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Mail\AuthMail;
 use App\Models\User;
+use App\Models\UsersValidationKeys;
 use Auth;
 use Illuminate\Http\Request;
 use App\Http\Requests\RegisterRequest;
@@ -125,10 +126,49 @@ class AuthController extends Controller
         
     }
 
-    public function Logout(Request $request)
-{
-    $request->user()->token()->revoke();
-    return response()->json(['message' => 'Successfully logged out'], 200);
-}
+    public function Logout(Request $request){
+        $request->user()->token()->revoke();
+        return response()->json(['message' => 'Successfully logged out'], 200);
+    }
+
+    public function requestValidationKey(Request $request){
+        $request->validate([
+            "email" => "required|email|exists:users,email"
+        ]);
+        $user = DB::table("users")
+                ->where("email", $request->email)
+                ->first();
+        if(!$user->status) return response()->json(["message" => "Your account is banned."],401);
+
+        $oldKey = DB::table("users_validation_keys")
+                    ->where('users_id', $user->id)
+                    ->first();
+        $newKey = $this->generateNumber();
+        if($oldKey){
+            DB::table("users_validation_keys")
+                    ->where('users_id', $user->id)
+                    ->delete();
+            UsersValidationKeys::create([
+                'validation_key' => $newKey, 
+                'users_id' => $user->id
+            ]);
+        } else {
+            UsersValidationKeys::create([
+                'validation_key' => $newKey, 
+                'users_id' => $user->id
+            ]);
+        }
+        Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
+            $message->from('qsdshop@gmail.com', 'QSD WebShop')
+                ->to($user->email, $user->name) 
+                ->subject('QSD Verification code');
+        });
+
+        return response()->json([
+            "message" => "Validation key has been sent to your email address!"
+        ],200);
+    }
+
+
 
 }
