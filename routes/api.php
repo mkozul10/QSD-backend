@@ -27,4 +27,5 @@ Route::post('/resetPassword', [AuthController::class,'resetPassword']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
+    Route::post('/changePassword', [AuthController::class,'changePassword']);
 });
