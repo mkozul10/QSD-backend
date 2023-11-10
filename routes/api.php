@@ -25,4 +25,5 @@ Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/requestValidationKey', [AuthController::class,'requestValidationKey']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
+    Route::post('/refresh', [AuthController::class,'Refresh']);
 });

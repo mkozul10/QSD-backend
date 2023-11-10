@@ -108,7 +108,7 @@ class AuthController extends Controller
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
-                Mail::send('mail.validate',['number' => $number,'user' => $user], function ($message) use ($user) {
+                Mail::send('mail.validate',['number' => $number,'user' => $user[0]], function ($message) use ($user) {
                     $message->from('qsdshop@gmail.com', 'QSD WebShop')
                         ->to($user[0]->email, $user[0]->name) 
                         ->subject('QSD Verification code');
@@ -156,7 +156,7 @@ class AuthController extends Controller
             'users_id' => $user->id
         ]);
 
-        Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
+        Mail::send('mail.validate',['number' => $newKey,'user' => $user[0]], function ($message) use ($user) {
             $message->from('qsdshop@gmail.com', 'QSD WebShop')
                 ->to($user->email, $user->name) 
                 ->subject('QSD Verification code');
@@ -164,6 +164,21 @@ class AuthController extends Controller
 
         return response()->json([
             "message" => "Validation key has been sent to your email address!"
+        ],200);
+    }
+
+    public function Refresh(Request $request){
+        $user = Auth::user();
+        $request->user()->token()->revoke();
+        $token = $user->createToken("qsdWebShop")->accessToken;
+        $user = Auth::user();
+        $user->role;
+        return response()->json([
+            'user' => $user,
+            'authorization' => [
+                'token' => $token,
+                'type' => 'Bearer',
+            ]
         ],200);
     }
 
