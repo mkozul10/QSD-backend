@@ -47,7 +47,11 @@ class User extends Authenticatable
     ];
 
     public function role()
-{
-    return $this->belongsTo(Role::class,'roles_id');
-}
+    {
+        return $this->belongsTo(Role::class,'roles_id');
+    }
+
+    public function validationKeys(){
+        return $this->hasMany(UsersValidationKeys::class,'users_id');
+    }
 }
