@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Exception;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -156,7 +157,7 @@ class AuthController extends Controller
             'users_id' => $user->id
         ]);
 
-        Mail::send('mail.validate',['number' => $newKey,'user' => $user[0]], function ($message) use ($user) {
+        Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
             $message->from('qsdshop@gmail.com', 'QSD WebShop')
                 ->to($user->email, $user->name) 
                 ->subject('QSD Verification code');
@@ -182,6 +183,32 @@ class AuthController extends Controller
         ],200);
     }
 
-
-
+    public function resetPassword(Request $request){
+        $request->validate([
+            "email"=> "required|email|exists:users,email",
+            'password'=> ['required', 'confirmed', Password::min(8)->letters()->symbols()],
+            "key" => "required"
+        ]);
+        $keyFromDB = DB::table('users_validation_keys')
+                    ->where('validation_key','=', $request->key)
+                    ->first();
+        if($keyFromDB !== null){
+            if($keyFromDB->validation_key === (int)$request->key){
+                if(Carbon::parse($keyFromDB->created_at)->addHours(2)->isPast()){
+                    return response()->json([
+                        "error" => "Validation key has expired."
+                    ],401);
+                }
+                DB::table("users")
+                    ->where("email", $request->email)
+                    ->update(['password' => Hash::make($request->password)]);
+                return response()->json([
+                    "message" => "New password set successfully!"
+                ],200);
+            }
+        }
+        return response()->json([
+            "error" => "Invalid validation key."
+        ],400);
+    }
 }
