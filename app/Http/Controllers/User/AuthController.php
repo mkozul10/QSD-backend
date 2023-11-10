@@ -187,7 +187,7 @@ class AuthController extends Controller
         $request->validate([
             "email"=> "required|email|exists:users,email",
             'password'=> ['required', 'confirmed', Password::min(8)->letters()->symbols()],
-            "key" => "required"
+            "key" => ["required",'numeric','digits:6']
         ]);
         $keyFromDB = DB::table('users_validation_keys')
                     ->where('validation_key','=', $request->key)

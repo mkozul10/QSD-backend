@@ -24,6 +24,7 @@ class LoginRequest extends FormRequest
         return [
             "email"=> "required|email|exists:users,email",
             "password"=> "required",
+            "key" => "numeric|digits:6",
         ];
     }
 }
