@@ -32,5 +32,5 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/changePassword', [AuthController::class,'changePassword']);
     Route::post('/addSize', [SizeController::class, 'addSize']);
     Route::put('/updateSize', [SizeController::class, 'updateSize']);
-    //Route::delete('/deleteSize/{id}', [SizeController::class,'deleteSize']);
+    Route::delete('/deleteSize/{id}', [SizeController::class,'deleteSize']);
 });
