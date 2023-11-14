@@ -88,4 +88,37 @@ class SizeController extends Controller
             "size" => $data
         ],200);
     }
+
+    public function deleteSize($id)
+    {
+        $validator = validator(['id' => $id], [
+            'id' => 'required|numeric|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $user = Auth::user();
+        if($user->roles_id === 1){
+            return response()->json([
+                "message" => "Unauthorized"
+            ],401);
+        }
+
+        $data = DB::table('sizes')
+                ->where('id', $id)
+                ->get();
+        if($data->isEmpty()) {
+            return response()->json([
+                "message" => "Size with the given ID was not found."
+            ],404);
+        }
+
+        DB::table('sizes')
+                ->where('id', $data[0]->id)
+                ->delete();
+
+        return response()->json(['message' => "Size successfully deleted."],200);
+    }
 }
