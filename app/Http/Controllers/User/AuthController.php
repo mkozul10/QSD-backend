@@ -110,7 +110,7 @@ class AuthController extends Controller
                         'updated_at' => Carbon::now()
                     ]);
                 Mail::send('mail.validate',['number' => $number,'user' => $user[0]], function ($message) use ($user) {
-                    $message->from('qsdshop@gmail.com', 'QSD WebShop')
+                    $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
                         ->to($user[0]->email, $user[0]->name) 
                         ->subject('QSD Verification code');
                 });
@@ -158,7 +158,7 @@ class AuthController extends Controller
         ]);
 
         Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
-            $message->from('qsdshop@gmail.com', 'QSD WebShop')
+            $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
                 ->to($user->email, $user->name) 
                 ->subject('QSD Verification code');
         });
