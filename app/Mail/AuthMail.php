@@ -12,13 +12,13 @@ use Illuminate\Queue\SerializesModels;
 class AuthMail extends Mailable
 {
     use Queueable, SerializesModels;
+    private $data = [];
     //private $key;
     /**
      * Create a new message instance.
      */
-    public function __construct(private string $email)
+    public function __construct()
     {
-        //$this->key = $key;
     }
 
     /**
@@ -38,7 +38,7 @@ class AuthMail extends Mailable
     {
         return new Content(
             view: 'mail.validate',
-            with:['name' => $this->email],
+            with:['data' => $this->data],
         );
     }
 
