@@ -6,6 +6,7 @@ use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\BrandController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,7 @@ Route::post('/resetPassword', [AuthController::class,'resetPassword']);
 Route::get('/sizes', [SizeController::class, 'sizes']);
 Route::get('/colors', [ColorController::class, 'colors']);
 Route::get('/categories', [CategoriesController::class, 'categories']);
+Route::get('/brands', [BrandController::class, 'brands']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
@@ -46,4 +48,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/addCategory', [CategoriesController::class, 'addCategory']);
     Route::put('/updateCategory', [CategoriesController::class, 'updateCategory']);
     Route::delete('/deleteCategory/{id}', [CategoriesController::class,'deleteCategory']);
+
+    Route::post('/addBrand', [BrandController::class, 'addCategory']);
+    Route::put('/updateBrand', [BrandController::class, 'updateCategory']);
+    Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteCategory']);
 });
