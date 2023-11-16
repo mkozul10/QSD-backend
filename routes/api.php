@@ -49,7 +49,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::put('/updateCategory', [CategoriesController::class, 'updateCategory']);
     Route::delete('/deleteCategory/{id}', [CategoriesController::class,'deleteCategory']);
 
-    Route::post('/addBrand', [BrandController::class, 'addCategory']);
-    Route::put('/updateBrand', [BrandController::class, 'updateCategory']);
-    Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteCategory']);
+    Route::post('/addBrand', [BrandController::class, 'addBrand']);
+    Route::put('/updateBrand', [BrandController::class, 'updateBrand']);
+    Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
 });
