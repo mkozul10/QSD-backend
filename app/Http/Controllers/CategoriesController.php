@@ -45,7 +45,7 @@ class CategoriesController extends Controller
         ]);
 
         return response()->json([
-            "message" => "Name successfully added.",
+            "message" => "Category successfully added.",
             "name" => $created
         ]);
     }

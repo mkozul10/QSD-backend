@@ -37,10 +37,11 @@ class ColorController extends Controller
             ],401);
         }
 
-        $color = $request->color;
+        $color = $request->name;
+        $hex_code = $request->hex_code;
 
         $created = Color::create([
-            "name"=> $name,
+            "name"=> $color,
             "hex_code"=> $hex_code,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
