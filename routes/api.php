@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\CategoriesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,7 @@ Route::post('/requestValidationKey', [AuthController::class,'requestValidationKe
 Route::post('/resetPassword', [AuthController::class,'resetPassword']);
 Route::get('/sizes', [SizeController::class, 'sizes']);
 Route::get('/colors', [ColorController::class, 'colors']);
+Route::get('/categories', [CategoriesController::class, 'categories']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
@@ -40,4 +42,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/addColor', [ColorController::class, 'addColor']);
     Route::put('/updateColor', [ColorController::class, 'updateColor']);
     Route::delete('/deleteColor/{id}', [ColorController::class,'deleteColor']);
+
+    Route::post('/addCategory', [CategoriesController::class, 'addCategory']);
+    Route::put('/updateCategory', [CategoriesController::class, 'updateCategory']);
+    Route::delete('/deleteCategory/{id}', [CategoriesController::class,'deleteCategory']);
 });
