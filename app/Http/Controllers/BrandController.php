@@ -10,16 +10,11 @@ use App\Models\Brand;
 
 class BrandController extends Controller
 {
-    public function brands(Request $request){
+    public function brands(){
         $brands = DB::table("brands")
                 ->select('*')
                 ->get();
 
-        if($brands->isEmpty()) {
-            return response()->json([
-                'msg'=> 'no data is found'
-            ],404);
-        }
         return response()->json([
             $brands
         ],200);            
@@ -29,12 +24,6 @@ class BrandController extends Controller
         $request->validate([
             "name"=> ['required','unique:brands,name']
         ]);
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
 
         $name = $request->name;
 
@@ -45,7 +34,7 @@ class BrandController extends Controller
         ]);
 
         return response()->json([
-            "message" => "Name successfully added.",
+            "message" => "Brand successfully added.",
             "name" => $created
         ]);
     }
@@ -56,19 +45,11 @@ class BrandController extends Controller
             "name" => ['unique:brands,name','required']
         ]);
 
-        $user = Auth::user();
-
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $brand = DB::table('brands')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
         
-        if($brand->isEmpty()) {
+        if(!$brand) {
             return response()->json([
                 "message" => "Brand with the given ID was not found."
             ],404);
@@ -81,7 +62,7 @@ class BrandController extends Controller
 
         $data = DB::table('brands')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
                 
         return response()->json([
             "message" => "Brand successfully updated.",
@@ -99,17 +80,10 @@ class BrandController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $data = DB::table('brands')
                 ->where('id', $id)
-                ->get();
-        if($data->isEmpty()) {
+                ->first();
+        if(!$data) {
             return response()->json([
                 "message" => "Brand with the given ID was not found."
             ],404);

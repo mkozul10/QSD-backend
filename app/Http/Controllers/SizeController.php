@@ -10,16 +10,11 @@ use App\Models\Size;
 
 class SizeController extends Controller
 {
-    public function sizes(Request $request){
+    public function sizes(){
         $sizes = DB::table("sizes")
                 ->select('*')
                 ->get();
 
-        if($sizes->isEmpty()) {
-            return response()->json([
-                'msg'=> 'no data is found'
-            ],404);
-        }
         return response()->json([
             $sizes
         ],200);            
@@ -29,12 +24,6 @@ class SizeController extends Controller
         $request->validate([
             "size"=> ['required','unique:sizes,size']
         ]);
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
 
         $size = $request->size;
 
@@ -56,19 +45,11 @@ class SizeController extends Controller
             "size" => ['unique:sizes,size','required']
         ]);
 
-        $user = Auth::user();
-
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $size = DB::table('sizes')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
         
-        if($size->isEmpty()) {
+        if(!$size) {
             return response()->json([
                 "message" => "Size with the given ID was not found."
             ],404);
@@ -81,7 +62,7 @@ class SizeController extends Controller
 
         $data = DB::table('sizes')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
                 
         return response()->json([
             "message" => "Size successfully updated.",
@@ -99,17 +80,10 @@ class SizeController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $data = DB::table('sizes')
                 ->where('id', $id)
-                ->get();
-        if($data->isEmpty()) {
+                ->first();
+        if(!$data) {
             return response()->json([
                 "message" => "Size with the given ID was not found."
             ],404);

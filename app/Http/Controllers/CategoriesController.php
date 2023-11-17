@@ -10,16 +10,11 @@ use App\Models\Category;
 
 class CategoriesController extends Controller
 {
-    public function categories(Request $request){
+    public function categories(){
         $categories = DB::table("categories")
                 ->select('*')
                 ->get();
 
-        if($categories->isEmpty()) {
-            return response()->json([
-                'msg'=> 'no data is found'
-            ],404);
-        }
         return response()->json([
             $categories
         ],200);            
@@ -29,12 +24,6 @@ class CategoriesController extends Controller
         $request->validate([
             "name"=> ['required','unique:categories,name']
         ]);
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
 
         $name = $request->name;
 
@@ -56,19 +45,11 @@ class CategoriesController extends Controller
             "name" => ['unique:categories,name','required']
         ]);
 
-        $user = Auth::user();
-
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $category = DB::table('categories')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
         
-        if($category->isEmpty()) {
+        if(!$category) {
             return response()->json([
                 "message" => "Category with the given ID was not found."
             ],404);
@@ -81,7 +62,7 @@ class CategoriesController extends Controller
 
         $data = DB::table('categories')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
                 
         return response()->json([
             "message" => "Category successfully updated.",
@@ -99,17 +80,10 @@ class CategoriesController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $data = DB::table('categories')
                 ->where('id', $id)
-                ->get();
-        if($data->isEmpty()) {
+                ->first();
+        if(!$data) {
             return response()->json([
                 "message" => "Category with the given ID was not found."
             ],404);

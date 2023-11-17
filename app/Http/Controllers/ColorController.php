@@ -10,16 +10,11 @@ use App\Models\Color;
 
 class ColorController extends Controller
 {
-    public function colors(Request $request){
+    public function colors(){
         $colors = DB::table("colors")
                 ->select('*')
                 ->get();
 
-        if($colors->isEmpty()) {
-            return response()->json([
-                'msg'=> 'no data is found'
-            ],404);
-        }
         return response()->json([
             $colors
         ],200);            
@@ -30,12 +25,6 @@ class ColorController extends Controller
             "name"=> ['required','unique:colors,name'],
             "hex_code"=> ['required','unique:colors,hex_code']
         ]);
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
 
         $color = $request->name;
         $hex_code = $request->hex_code;
@@ -50,7 +39,6 @@ class ColorController extends Controller
         return response()->json([
             "message" => "Color successfully added.",
             "name" => $created
-            //"hex_code" => $created
         ]);
     }
 
@@ -61,19 +49,11 @@ class ColorController extends Controller
             "hex_code"=> ['required','unique:colors,hex_code']
         ]);
 
-        $user = Auth::user();
-
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $color = DB::table('colors')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
         
-        if($color->isEmpty()) {
+        if(!$color) {
             return response()->json([
                 "message" => "Color with the given ID was not found."
             ],404);
@@ -87,7 +67,7 @@ class ColorController extends Controller
 
         $data = DB::table('colors')
                 ->where('id', $request->id)
-                ->get();
+                ->first();
                 
         return response()->json([
             "message" => "Color successfully updated.",
@@ -105,17 +85,10 @@ class ColorController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $user = Auth::user();
-        if($user->roles_id === 1){
-            return response()->json([
-                "message" => "Unauthorized"
-            ],401);
-        }
-
         $data = DB::table('colors')
                 ->where('id', $id)
-                ->get();
-        if($data->isEmpty()) {
+                ->first();
+        if(!$data) {
             return response()->json([
                 "message" => "Color with the given ID was not found."
             ],404);
