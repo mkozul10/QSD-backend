@@ -7,6 +7,7 @@ use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authorization;
 
 /*
@@ -22,7 +23,7 @@ use App\Http\Middleware\Authorization;
 /*
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-});
+})
 */
 
 Route::post('/register', [AuthController::class, 'Register']);
@@ -33,6 +34,7 @@ Route::get('/sizes', [SizeController::class, 'sizes']);
 Route::get('/colors', [ColorController::class, 'colors']);
 Route::get('/categories', [CategoriesController::class, 'categories']);
 Route::get('/brands', [BrandController::class, 'brands']);
+Route::get('/users', [UserController::class, 'users']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
