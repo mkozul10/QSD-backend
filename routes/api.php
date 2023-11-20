@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\AuthController;
@@ -40,22 +41,22 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::middleware(['authorization'])->group(function () {
 
-    
+        Route::post('/addSize', [SizeController::class, 'addSize']);
+        Route::put('/updateSize', [SizeController::class, 'updateSize']);
+        Route::delete('/deleteSize/{id}', [SizeController::class,'deleteSize']);
 
-    Route::post('/addSize', [SizeController::class, 'addSize']);
-    Route::put('/updateSize', [SizeController::class, 'updateSize']);
-    Route::delete('/deleteSize/{id}', [SizeController::class,'deleteSize']);
+        Route::post('/addColor', [ColorController::class, 'addColor']);
+        Route::put('/updateColor', [ColorController::class, 'updateColor']);
+        Route::delete('/deleteColor/{id}', [ColorController::class,'deleteColor']);
 
-    Route::post('/addColor', [ColorController::class, 'addColor']);
-    Route::put('/updateColor', [ColorController::class, 'updateColor']);
-    Route::delete('/deleteColor/{id}', [ColorController::class,'deleteColor']);
+        Route::post('/addCategory', [CategoriesController::class, 'addCategory']);
+        Route::put('/updateCategory', [CategoriesController::class, 'updateCategory']);
+        Route::delete('/deleteCategory/{id}', [CategoriesController::class,'deleteCategory']);
 
-    Route::post('/addCategory', [CategoriesController::class, 'addCategory']);
-    Route::put('/updateCategory', [CategoriesController::class, 'updateCategory']);
-    Route::delete('/deleteCategory/{id}', [CategoriesController::class,'deleteCategory']);
+        Route::post('/addBrand', [BrandController::class, 'addBrand']);
+        Route::put('/updateBrand', [BrandController::class, 'updateBrand']);
+        Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
 
-    Route::post('/addBrand', [BrandController::class, 'addBrand']);
-    Route::put('/updateBrand', [BrandController::class, 'updateBrand']);
-    Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
+        Route::post('/addProduct', [ProductController::class,'addProduct']);
 });
 });
