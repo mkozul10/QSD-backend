@@ -20,26 +20,14 @@ class UserController extends Controller
         ],200);            
     }
 
-    public function getUser($id){
+    public function getUser(){
 
-        $user = DB::table('users')
-                ->where('id', $request->id)
-                ->first();
-        
-        if(!$user) {
-            return response()->json([
-                "message" => "User with the given ID was not found."
-            ],404);
-        }
-
-        $user = DB::table("users")
-                ->select('*')
-                ->where('id', $request->id)
-                ->first();
+        $user= Auth::user();
 
         return response()->json([
             $user
         ],200);            
+
     }
 
     public function updateUser(Request $request){
@@ -79,6 +67,58 @@ class UserController extends Controller
         ],200);
 
  
+    }
+
+    public function deleteUser($id){
+                
+        $validator = validator(['id' => $id], [
+            'id' => 'required|numeric|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $data = DB::table('users')
+                ->where('id', $id)
+                ->first();
+        if(!$data) {
+            return response()->json([
+                "message" => "User with the given ID was not found."
+            ],404);
+        }
+
+        DB::table('users')
+                ->where('id', $data[0]->id)
+                ->delete();
+
+        return response()->json(['message' => "User successfully deleted."],200);
+
+    }
+
+    public function banUser($id){
+                
+        $validator = validator(['id' => $id], [
+            'id' => 'required|numeric|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+          $data = DB::table('users')
+                ->where('id', $id)
+                ->first();
+        if(!$data) {
+            return response()->json([
+                "message" => "User with the given ID was not found."
+            ],404);
+        }
+
+    }
+
+    public function updateRole(){
+                
     }
 
     

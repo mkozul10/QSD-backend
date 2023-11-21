@@ -7,8 +7,8 @@ use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authorization;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +39,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
+    Route::get('/getUser', [UserController::class, 'getUser']);
 
     Route::middleware(['authorization'])->group(function () {
 
@@ -59,5 +60,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/addBrand', [BrandController::class, 'addBrand']);
     Route::put('/updateBrand', [BrandController::class, 'updateBrand']);
     Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
+
+    Route::get('/deleteUser/{id}', [UserController::class, 'deleteUser']);
 });
 });
