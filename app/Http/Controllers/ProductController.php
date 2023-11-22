@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Image;
@@ -30,8 +31,65 @@ class ProductController extends Controller
             return response()->json(["message" => "Product with the given ID was not found."], 404);
         }
     }
-    public function addProduct(ProductRequest $request){
+    private function _checkForExistingPivot($categories, $sizes, $products_id){
+        $check1 = [];
+        $check2 = [];
+        $result = [];
+        for( $i = 0; $i < count($categories); $i++ ){
+            $condition = DB::table('categories_products')
+                        ->where('products_id', (int) $products_id)
+                        ->where('categories_id', (int) $categories[$i])
+                        ->exists();
+            $check1[] = $condition;
+        }
+
+        for( $i = 0; $i < count($sizes); $i++ ){
+            $condition = DB::table('products_sizes')
+                        ->where('products_id', (int) $products_id)
+                        ->where('sizes_id', (int) $sizes[$i]['size_id'])
+                        ->exists();
+            $check2[] = $condition;
+        }
+
+        if (in_array(true, $check1)) $result[] = false;
+        else $result[] = true;
+
+        if (in_array(true, $check2)) $result[] = false;
+        else $result[] = true;
+
+        return $result;
+           
+    }
+
+    private function _createPivots($id, $categories, $sizes, $files){
+        for( $i = 0; $i < count($categories); $i++ ){
+            ProductCategory::create([
+                'products_id' => $id,
+                'categories_id' => (int) $categories[$i]
+            ]);
+        }
+
+        for( $i = 0; $i < count($sizes); $i++ ){
+            ProductSize::create([
+                'products_id' => $id,
+                'sizes_id' => $sizes[$i]['size_id'],
+                'quantity' => $sizes[$i]['amount'],
+            ]);
+        }
+        
         $user = Auth::user();
+        foreach ($files as $file) {
+            $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('images', $uniqueFileName);
+            Image::create([
+                'name' => $uniqueFileName,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+                'products_id' => $id
+            ]);
+        }
+    }
+    public function addProduct(ProductRequest $request){
 
         $files = $request->file('images');
         $categories = $request->input('categories');
@@ -47,31 +105,8 @@ class ProductController extends Controller
             'colors_id' => (int) $request->input('brand_id'),
             'brands_id' => (int) $request->input('color_id')
         ]);
-        for( $i = 0; $i < count($categories); $i++ ){
-            ProductCategory::create([
-                'products_id' => $created->id,
-                'categories_id' => (int) $categories[$i]
-            ]);
-        }
-
-        for( $i = 0; $i < count($sizes); $i++ ){
-            ProductSize::create([
-                'products_id' => $created->id,
-                'sizes_id' => $sizes[$i]['size_id'],
-                'quantity' => $sizes[$i]['amount'],
-            ]);
-        }
         
-        foreach ($files as $file) {
-            $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('images', $uniqueFileName);
-            Image::create([
-                'name' => $uniqueFileName,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'products_id' => $created->id
-            ]);
-        }
+        $this->_createPivots((int) $created->id, $categories, $sizes, $files);
         $created->color;
         $created->brand;
         $created->images;
@@ -99,5 +134,60 @@ class ProductController extends Controller
         $product = Product::with(['color','brand','images','categories','sizes'])->find($id);
     
         return response()->json($product,200);
+    }
+
+    public function updateProduct(UpdateProductRequest $request){
+        
+        $id = $request->input('id');
+        $files = $request->file('images');
+        $categories = $request->input('categories');
+        $sizes = $request->input('sizes');
+
+        if(!$files) return response()->json([
+            "message" => "You must add new image to product."
+        ],400);
+
+        $numOfImages = Image::where('products_id', '=', $id)->count();
+        $addedFiles = count($files);
+        if($numOfImages === 5) return response()->json(["message" => "You have 5 images stored, you can add only 0 more."]);
+        else if($numOfImages + $addedFiles > 5){
+            $difference = 5 - $numOfImages;
+            return response()->json([
+                "message" => "You have $numOfImages images stored, you can add only $difference more."
+            ],400);
+        } 
+
+        $product = Product::find($id);
+
+        $result = $this->_checkForExistingPivot($categories, $sizes, $product->id);
+
+        if(!$result[0]) return response()->json([
+            "message" => "This product is already in added category"
+        ],400);
+
+        if(!$result[1]) return response()->json([
+            "message" => "This product already have this size"
+        ],400);
+        
+        $this->_createPivots((int) $id, $categories, $sizes, $files);
+        $product->update([
+            'name' => $request->input('name'),
+            'description'=> $request->input('description'),
+            'price'=> $request->input('price'),
+            'gender'=> $request->input('gender'),
+            'updated_at' => Carbon::now(),
+            'colors_id' => (int) $request->input('brand_id'),
+            'brands_id' => (int) $request->input('color_id')
+        ]);
+
+        $product->color;
+        $product->brand;
+        $product->images;
+        $product->categories;
+        $product->sizes;
+        return response()->json([
+            'message' => "Successfully updated product.",
+            $product
+        ],200);
     }
 }
