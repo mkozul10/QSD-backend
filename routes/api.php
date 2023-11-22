@@ -66,5 +66,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
 
         Route::post('/addProduct', [ProductController::class,'addProduct']);
+        Route::post('/updateProduct', [ProductController::class,'updateProduct']);
 });
 });
