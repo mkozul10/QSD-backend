@@ -12,6 +12,7 @@ use App\Models\ProductSize;
 use Auth;
 use DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -188,6 +189,27 @@ class ProductController extends Controller
         return response()->json([
             'message' => "Successfully updated product.",
             $product
+        ],200);
+    }
+
+    public function deleteProduct($id){
+        $result = $this->_productValidation($id);
+        
+        if($result) return $result;
+
+        $product = Product::find($id);
+
+        $images = $product->images;
+
+        foreach ($images as $image) {
+            $filePath = 'images/' . $image->name;    
+            Storage::delete($filePath);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            "message" => "Product successfully deleted."
         ],200);
     }
 }
