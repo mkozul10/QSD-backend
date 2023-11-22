@@ -212,4 +212,33 @@ class ProductController extends Controller
             "message" => "Product successfully deleted."
         ],200);
     }
+
+    public function deleteImage($id){
+        $validator1 = validator(['id' => $id], [
+            'id' => 'required|numeric|min:1',
+        ]);
+        if ($validator1->fails()) {
+            return response()->json(['error' => $validator1->errors()], 422);
+        }
+        $validator2 = validator(['id' => $id], [
+            'id' => ['exists:images,id']
+        ]);
+        if ($validator2->fails()) {
+            return response()->json(["message" => "Image not found."], 404);
+        }
+        
+        $image = Image::find($id);
+
+        $related_product = Product::find($image->products_id);
+        $related_images = $related_product->images;
+        if(count($related_images) === 1 && $related_images[0]->id === $image->id){
+            return response()->json(["message" => "You can't delete the last image"],403);
+        }
+
+        $filePath = 'images/' . $image->name;
+        $image->delete();
+        Storage::delete($filePath);
+
+        return response()->json(["message" => "Image successfully deleted."],200);
+    }
 }
