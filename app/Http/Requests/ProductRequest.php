@@ -25,14 +25,14 @@ class ProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:55', 'unique:products,name'],
             'price' => ['required', 'integer'],
             'description' => ['required', 'string'],
-            'gender' => ['required', 'string'],
+            'gender' => ['required', 'string', 'in:woman,man,children'],
             'brand_id' => ['required', 'integer', 'exists:brands,id'],
             'color_id' => ['required', 'integer', 'exists:colors,id'],
-            'images' => 'required',
+            'images' => ['required','array'],
             'images.*' => ['required', 'image', 'mimes:jpeg,jpg,jfif,png', 'max:2048'],
-            'categories' => 'required',
+            'categories' => ['required','array'],
             'categories.*' => ['required', 'integer', 'exists:categories,id'],
-            'sizes' => 'required',
+            'sizes' => ['required','array'],
             'sizes.*.amount' => ['required','integer','min:0'],
             'sizes.*.size_id' => ['required','integer','exists:sizes,id']
         ];
