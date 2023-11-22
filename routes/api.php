@@ -26,14 +26,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 */
 
+//auth endpoints
 Route::post('/register', [AuthController::class, 'Register']);
 Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/requestValidationKey', [AuthController::class,'requestValidationKey']);
 Route::post('/resetPassword', [AuthController::class,'resetPassword']);
+
+//endpoints for sizes, colors, categories and brands GET methods
 Route::get('/sizes', [SizeController::class, 'sizes']);
 Route::get('/colors', [ColorController::class, 'colors']);
 Route::get('/categories', [CategoriesController::class, 'categories']);
 Route::get('/brands', [BrandController::class, 'brands']);
+
+//product GET methods
+Route::get('/getProducts', [ProductController::class,'getProducts']);
+Route::get('/getProduct/{id}', [ProductController::class,'getProduct']);
+
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
