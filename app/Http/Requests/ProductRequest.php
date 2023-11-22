@@ -28,7 +28,7 @@ class ProductRequest extends FormRequest
             'gender' => ['required', 'string', 'in:woman,man,children'],
             'brand_id' => ['required', 'integer', 'exists:brands,id'],
             'color_id' => ['required', 'integer', 'exists:colors,id'],
-            'images' => ['required','array'],
+            'images' => ['required','array', 'max:5'],
             'images.*' => ['required', 'image', 'mimes:jpeg,jpg,jfif,png', 'max:2048'],
             'categories' => ['required','array'],
             'categories.*' => ['required', 'integer', 'exists:categories,id'],
