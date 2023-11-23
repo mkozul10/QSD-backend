@@ -37,6 +37,6 @@ class Product extends Model
     }
     public function ratings(){
         return $this->belongsToMany(User::class,'products_ratings', 'products_id', 'users_id')
-                    ->withPivot(['review', 'rating']);
+                    ->withPivot(['review', 'rating', 'created_at', 'updated_at']);
     }
 }
