@@ -35,4 +35,8 @@ class Product extends Model
         return $this->belongsToMany(Size::class,'products_sizes', 'products_id', 'sizes_id')
                     ->withPivot('quantity');
     }
+    public function ratings(){
+        return $this->belongsToMany(User::class,'products_ratings', 'products_id', 'users_id')
+                    ->withPivot(['review', 'rating']);
+    }
 }
