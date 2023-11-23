@@ -46,6 +46,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
+    //rating products
+    Route::post('/rateProduct', [ProductController::class,'rateProduct']);
 
     Route::middleware(['authorization'])->group(function () {
 
