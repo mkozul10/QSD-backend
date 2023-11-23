@@ -290,4 +290,27 @@ class ProductController extends Controller
         }
         return response()->json(["message" => "Rating saved successfully."],200);
     }
+
+    public function editRateProduct(Request $request){
+        $request->validate([
+            "rate_id" => ['required','numeric', 'min:1', 'exists:products_ratings,id'],
+            "rating" => ['required','numeric', 'min:0', 'max:5'],
+            "description" => 'string'
+        ]);
+        $rating = ProductRating::find($request->rate_id);
+        if(empty($request->description)){
+            $rating->update([
+                'rating' => $request->rating
+            ]);
+        } else {
+            $rating->update([
+                'rating' => $request->rating,
+                'review'=> $request->description
+            ]);
+        }
+        return response()->json([
+            'message'=> 'Rating updated successfully'
+        ],200);
+
+    }
 }
