@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\ProductRating;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Image;
@@ -132,7 +133,7 @@ class ProductController extends Controller
         
         if($result) return $result;
 
-        $product = Product::with(['color','brand','images','categories','sizes'])->find($id);
+        $product = Product::with(['color','brand','images','categories','sizes', 'ratings'])->find($id);
     
         return response()->json($product,200);
     }
@@ -240,5 +241,53 @@ class ProductController extends Controller
         Storage::delete($filePath);
 
         return response()->json(["message" => "Image successfully deleted."],200);
+    }
+
+    public function rateProduct(Request $request){
+        $request->validate([
+            "product_id" => ['required','numeric', 'min:1', 'exists:products,id'],
+            "rating" => ['required','numeric', 'min:0', 'max:5'],
+            "description" => 'string'
+        ]);
+
+        $user = Auth::user();
+
+        $condition = DB::table('products_ratings')
+                        ->where('products_id', $request->product_id)
+                        ->where('users_id', $user->id)
+                        ->exists();
+        if ($condition) {
+            $rating = ProductRating::where('users_id', $user->id)
+                        ->where('products_id', $request->product_id)
+                        ->first();
+
+            if(empty($request->description)){
+                $rating->update([
+                    'rating' => $request->rating
+                ]);
+            } else {
+                $rating->update([
+                    'rating' => $request->rating,
+                    'review'=> $request->description
+                ]);
+            }
+            return response()->json(['message'=> 'Rating updated successfully'],200);
+        }
+
+        if(empty($request->description)){   
+            $created = ProductRating::create([
+                'users_id' => $user->id,
+                'products_id' => $request->product_id,
+                'rating' => $request->rating
+            ]);
+        } else{
+            $created = ProductRating::create([
+                'users_id' => $user->id,
+                'products_id' => $request->product_id,
+                'rating' => $request->rating,
+                'review'=> $request->description
+            ]);
+        }
+        return response()->json(["message" => "Rating saved successfully."],200);
     }
 }
