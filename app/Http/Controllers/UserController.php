@@ -7,48 +7,59 @@ use DB;
 use Carbon\Carbon;
 use Auth;
 use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+
+
 
 class UserController extends Controller
 {
+    
     public function users(){
-        $users = DB::table("users")
-                ->select('*')
-                ->get();
+
+      $users = User::with('role')->get();
 
         return response()->json([
             $users
         ],200);            
+
     }
+
 
     public function getUser(){
 
-        $user= Auth::user();
-
+        $user = Auth::user();
+        $user->role;
+        
         return response()->json([
             $user
+    
         ],200);            
 
     }
 
     public function updateUser(Request $request){
-        $request->validate([
-            "id" => 'required',
-            "email" => ['unique:users,email','required']
+
+        $validator = Validator::make($request->all(),[
+            'first_name' => 'string|required',
+            'last_name' => 'string|required',
+            'email' => ['required',Rule::unique('users'),'string'],
+            'phone' => 'string',
+            'city' => 'string',
+            'address' => 'string',
+            'zip_code' => 'string',
         ]);
 
-        $user = DB::table('users')
-                ->where('id', $request->id)
-                ->first();
-        
-        if(!$user) {
-            return response()->json([
-                "message" => "User with the given ID was not found."
-            ],404);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $updated = User::where('id',$request->id )->update([
-            'name' => $request->name,
-            'surname' => $request->surname,
+
+        $updated = Auth::user()->update([
+            'name' => $request->first_name,
+            'surname' => $request->last_name,
             'email' => $request->email,
             'city' => $request->city,
             'address' => $request->address,
@@ -57,42 +68,14 @@ class UserController extends Controller
             'updated_at' => Carbon::now(),
         ]);
 
-        $data = DB::table('users')
-                ->where('id', $request->id)
-                ->first();
+        
+        $data = Auth::user();
+        $data->role;
                 
         return response()->json([
             "message" => "User successfully updated.",
             "user" => $data
         ],200);
-
- 
-    }
-
-    public function deleteUser($id){
-                
-        $validator = validator(['id' => $id], [
-            'id' => 'required|numeric|min:1',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
-
-        $data = DB::table('users')
-                ->where('id', $id)
-                ->first();
-        if(!$data) {
-            return response()->json([
-                "message" => "User with the given ID was not found."
-            ],404);
-        }
-
-        DB::table('users')
-                ->where('id', $data[0]->id)
-                ->delete();
-
-        return response()->json(['message' => "User successfully deleted."],200);
 
     }
 

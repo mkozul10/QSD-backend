@@ -40,6 +40,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
     Route::get('/getUser', [UserController::class, 'getUser']);
+    Route::post('/updateUser', [UserController::class, 'updateUser']);
 
     Route::middleware(['authorization'])->group(function () {
 
@@ -61,6 +62,5 @@ Route::middleware(['auth:api'])->group(function () {
     Route::put('/updateBrand', [BrandController::class, 'updateBrand']);
     Route::delete('/deleteBrand/{id}', [BrandController::class,'deleteBrand']);
 
-    Route::get('/deleteUser/{id}', [UserController::class, 'deleteUser']);
 });
 });
