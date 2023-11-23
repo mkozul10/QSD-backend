@@ -122,7 +122,7 @@ class ProductController extends Controller
             "page" => ['integer', 'min:1']
         ]);
         $perPage = $request->input('page', 10);
-        $products = Product::with(['color','brand','images','categories','sizes'])
+        $products = Product::with(['color','brand','images','categories','sizes', 'ratings'])
                     ->paginate($perPage);
         
         return response()->json($products,200);
