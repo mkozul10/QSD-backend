@@ -9,6 +9,7 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
 use App\Http\Middleware\Authorization;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ use App\Http\Middleware\Authorization;
 /*
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-});
+})
 */
 
 //auth endpoints
@@ -42,12 +43,16 @@ Route::get('/brands', [BrandController::class, 'brands']);
 Route::get('/getProducts', [ProductController::class,'getProducts']);
 Route::get('/getProduct/{id}', [ProductController::class,'getProduct']);
 
+Route::get('/users', [UserController::class, 'users']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
     //rating products
     Route::post('/rateProduct', [ProductController::class,'rateProduct']);
+    //user endpoints
+    Route::get('/getUser', [UserController::class, 'getUser']);
+    Route::post('/updateUser', [UserController::class, 'updateUser']);
 
     Route::middleware(['authorization'])->group(function () {
 
