@@ -29,12 +29,20 @@ class UpdateProductRequest extends FormRequest
             'gender' => ['required', 'string', 'in:woman,man,children'],
             'brand_id' => ['required', 'integer', 'exists:brands,id'],
             'color_id' => ['required', 'integer', 'exists:colors,id'],
-            'images' => ['array', 'max:5'],
+            'images' => ['required','array', 'max:5'],
             'categories' => ['required','array'],
             'categories.*' => ['required', 'integer', 'exists:categories,id'],
             'sizes' => ['required','array'],
-            'sizes.*.amount' => ['required','integer','min:0'],
-            'sizes.*.size_id' => ['required','integer','exists:sizes,id']
+            //'sizes.*.amount' => ['required','integer','min:0'],
+            'sizes.*.quantitty' => ['required','integer','min:0'],
+            //'sizes.*.size_id' => ['required','integer','exists:sizes,id']
+            'sizes.*.sizes_id' => ['required','integer','exists:sizes,id']
+        ];
+    }
+    public function messages(): array
+    {
+        return [
+            'images.required' => 'You must add new image to product.'
         ];
     }
 }
