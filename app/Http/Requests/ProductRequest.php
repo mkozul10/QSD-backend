@@ -33,8 +33,10 @@ class ProductRequest extends FormRequest
             'categories' => ['required','array'],
             'categories.*' => ['required', 'integer', 'exists:categories,id'],
             'sizes' => ['required','array'],
-            'sizes.*.amount' => ['required','integer','min:0'],
-            'sizes.*.size_id' => ['required','integer','exists:sizes,id']
+            //'sizes.*.amount' => ['required','integer','min:0'],
+            //'sizes.*.size_id' => ['required','integer','exists:sizes,id']
+            'sizes.*.sizes_id' => ['required','integer','exists:sizes,id'],
+            'sizes.*.quantity' => ['required','integer','min:0'],
         ];
     }
 }

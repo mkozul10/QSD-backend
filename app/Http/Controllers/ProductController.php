@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EditRateProductRequest;
 use App\Http\Requests\ProductRequest;
+use App\Http\Requests\RateProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\ProductRating;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Image;
-use App\Models\ProductCategory;
-use App\Models\ProductSize;
 use Auth;
 use DB;
 use Carbon\Carbon;
@@ -18,6 +18,19 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
 
+    private function handleFiles($files, $id){
+        $user = Auth::user();
+        foreach ($files as $file) {
+            $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('images', $uniqueFileName);
+            Image::create([
+                'name' => $uniqueFileName,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+                'products_id' => $id
+            ]);
+        }
+    }
     private function _productValidation($id){
         $validator1 = validator(['id' => $id], [
             'id' => 'required|numeric|min:1',
@@ -31,64 +44,6 @@ class ProductController extends Controller
         ]);
         if ($validator2->fails()) {
             return response()->json(["message" => "Product with the given ID was not found."], 404);
-        }
-    }
-    private function _checkForExistingPivot($categories, $sizes, $products_id){
-        $check1 = [];
-        $check2 = [];
-        $result = [];
-        for( $i = 0; $i < count($categories); $i++ ){
-            $condition = DB::table('categories_products')
-                        ->where('products_id', (int) $products_id)
-                        ->where('categories_id', (int) $categories[$i])
-                        ->exists();
-            $check1[] = $condition;
-        }
-
-        for( $i = 0; $i < count($sizes); $i++ ){
-            $condition = DB::table('products_sizes')
-                        ->where('products_id', (int) $products_id)
-                        ->where('sizes_id', (int) $sizes[$i]['size_id'])
-                        ->exists();
-            $check2[] = $condition;
-        }
-
-        if (in_array(true, $check1)) $result[] = false;
-        else $result[] = true;
-
-        if (in_array(true, $check2)) $result[] = false;
-        else $result[] = true;
-
-        return $result;
-           
-    }
-
-    private function _createPivots($id, $categories, $sizes, $files){
-        for( $i = 0; $i < count($categories); $i++ ){
-            ProductCategory::create([
-                'products_id' => $id,
-                'categories_id' => (int) $categories[$i]
-            ]);
-        }
-
-        for( $i = 0; $i < count($sizes); $i++ ){
-            ProductSize::create([
-                'products_id' => $id,
-                'sizes_id' => $sizes[$i]['size_id'],
-                'quantity' => $sizes[$i]['amount'],
-            ]);
-        }
-        
-        $user = Auth::user();
-        foreach ($files as $file) {
-            $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('images', $uniqueFileName);
-            Image::create([
-                'name' => $uniqueFileName,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'products_id' => $id
-            ]);
         }
     }
     public function addProduct(ProductRequest $request){
@@ -108,12 +63,11 @@ class ProductController extends Controller
             'brands_id' => (int) $request->input('color_id')
         ]);
         
-        $this->_createPivots((int) $created->id, $categories, $sizes, $files);
-        $created->color;
-        $created->brand;
-        $created->images;
-        $created->categories;
-        $created->sizes;
+        $this->handleFiles($files, $created->id);
+        $created->categories()->sync($categories);
+        $created->sizes()->sync($sizes);
+
+        $created->load(['color', 'brand', 'images', 'categories', 'sizes']);
         return response()->json($created,200);
     }
 
@@ -145,10 +99,6 @@ class ProductController extends Controller
         $categories = $request->input('categories');
         $sizes = $request->input('sizes');
 
-        if(!$files) return response()->json([
-            "message" => "You must add new image to product."
-        ],400);
-
         $numOfImages = Image::where('products_id', '=', $id)->count();
         $addedFiles = count($files);
         if($numOfImages === 5) return response()->json(["message" => "You have 5 images stored, you can add only 0 more."]);
@@ -160,18 +110,7 @@ class ProductController extends Controller
         } 
 
         $product = Product::find($id);
-
-        $result = $this->_checkForExistingPivot($categories, $sizes, $product->id);
-
-        if(!$result[0]) return response()->json([
-            "message" => "This product is already in added category"
-        ],400);
-
-        if(!$result[1]) return response()->json([
-            "message" => "This product already have this size"
-        ],400);
         
-        $this->_createPivots((int) $id, $categories, $sizes, $files);
         $product->update([
             'name' => $request->input('name'),
             'description'=> $request->input('description'),
@@ -181,12 +120,12 @@ class ProductController extends Controller
             'colors_id' => (int) $request->input('brand_id'),
             'brands_id' => (int) $request->input('color_id')
         ]);
+        $this->handleFiles($files,$product->id);
 
-        $product->color;
-        $product->brand;
-        $product->images;
-        $product->categories;
-        $product->sizes;
+        $product->categories()->sync($categories);
+        $product->sizes()->sync($sizes);
+
+        $product->load(['color', 'brand', 'images', 'categories', 'sizes']);
         return response()->json([
             'message' => "Successfully updated product.",
             $product
@@ -243,13 +182,7 @@ class ProductController extends Controller
         return response()->json(["message" => "Image successfully deleted."],200);
     }
 
-    public function rateProduct(Request $request){
-        $request->validate([
-            "product_id" => ['required','numeric', 'min:1', 'exists:products,id'],
-            "rating" => ['required','numeric', 'min:0', 'max:5'],
-            "description" => 'string'
-        ]);
-
+    public function rateProduct(RateProductRequest $request){
         $user = Auth::user();
 
         $condition = DB::table('products_ratings')
@@ -261,7 +194,7 @@ class ProductController extends Controller
                         ->where('products_id', $request->product_id)
                         ->first();
 
-            if(empty($request->description)){
+            if(!$request->description){
                 $rating->update([
                     'rating' => $request->rating
                 ]);
@@ -274,7 +207,7 @@ class ProductController extends Controller
             return response()->json(['message'=> 'Rating updated successfully'],200);
         }
 
-        if(empty($request->description)){   
+        if(!$request->description){   
             $created = ProductRating::create([
                 'users_id' => $user->id,
                 'products_id' => $request->product_id,
@@ -291,14 +224,9 @@ class ProductController extends Controller
         return response()->json(["message" => "Rating saved successfully."],200);
     }
 
-    public function editRateProduct(Request $request){
-        $request->validate([
-            "rate_id" => ['required','numeric', 'min:1', 'exists:products_ratings,id'],
-            "rating" => ['required','numeric', 'min:0', 'max:5'],
-            "description" => 'string'
-        ]);
+    public function editRateProduct(EditRateProductRequest $request){
         $rating = ProductRating::find($request->rate_id);
-        if(empty($request->description)){
+        if(!$request->description){
             $rating->update([
                 'rating' => $request->rating
             ]);
