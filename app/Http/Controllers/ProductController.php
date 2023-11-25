@@ -33,6 +33,24 @@ class ProductController extends Controller
         }
     }
 
+    private function handleRating($product_id, $rating, $oldRating = null){
+        $product = Product::find($product_id);
+            $numberOfProducts = ProductRating::where('products_id', $product_id)->count();
+            $totalRating = 0;
+            
+            if($numberOfProducts > 0){
+                if($oldRating) $totalRating = $product->total_rating -  $oldRating + (float) $rating;
+                else $totalRating = $product->total_rating + (float) $rating;
+
+                $average = $totalRating / $numberOfProducts;
+
+                $product->update([
+                    'total_rating' => $totalRating,
+                    'avg_rating' => $average
+                ]);
+            }
+    }
+
     private function updateFiles($files, $id){
         $user = Auth::user();
         $hashes = DB::table('images')
@@ -211,6 +229,7 @@ class ProductController extends Controller
             $rating = ProductRating::where('users_id', $user->id)
                         ->where('products_id', $request->product_id)
                         ->first();
+            $oldRating = $rating->rating;
 
             if(!$request->description){
                 $rating->update([
@@ -222,6 +241,8 @@ class ProductController extends Controller
                     'review'=> $request->description
                 ]);
             }
+            $this->handleRating($request->product_id, $request->rating, $oldRating);
+
             return response()->json(['message'=> 'Rating updated successfully'],200);
         }
 
@@ -239,11 +260,15 @@ class ProductController extends Controller
                 'review'=> $request->description
             ]);
         }
+        $this->handleRating($request->product_id, $request->rating);
+
         return response()->json(["message" => "Rating saved successfully."],200);
     }
 
     public function editRateProduct(EditRateProductRequest $request){
         $rating = ProductRating::find($request->rate_id);
+        $oldRating = $rating->rating;
+        
         if(!$request->description){
             $rating->update([
                 'rating' => $request->rating
@@ -254,6 +279,8 @@ class ProductController extends Controller
                 'review'=> $request->description
             ]);
         }
+        $this->handleRating($rating->products_id, $request->rating, $oldRating);
+
         return response()->json([
             'message'=> 'Rating updated successfully'
         ],200);
