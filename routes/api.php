@@ -77,6 +77,10 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('/deleteProduct/{id}', [ProductController::class,'deleteProduct']);
         Route::delete('/deleteImage/{id}', [ProductController::class,'deleteImage']);
 
+        Route::delete('/deleteUser/{id}', [UserController::class,'deleteUser']);
+        Route::post('/banUser/{id}', [UserController::class,'banUser']);
+        Route::post('/updateRole', [UserController::class,'updateRole']);
+
         Route::post('/editRateProduct', [ProductController::class,'editRateProduct']);
 });
 });
