@@ -12,7 +12,6 @@ use App\Models\Product;
 use App\Models\Image;
 use Auth;
 use DB;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -22,16 +21,42 @@ class ProductController extends Controller
         $user = Auth::user();
         foreach ($files as $file) {
             $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('images', $uniqueFileName);
+            $fileHash = md5_file($file->getRealPath()); 
+            $file->storeAs('public/images', $uniqueFileName);
+            $imageUrl = asset("storage/images/{$uniqueFileName}");
             Image::create([
                 'name' => $uniqueFileName,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'products_id' => $id
+                'products_id' => $id,
+                'link'=> $imageUrl,
+                'hash' => $fileHash,
             ]);
         }
     }
-    private function _productValidation($id){
+
+    private function updateFiles($files, $id){
+        $user = Auth::user();
+        $hashes = DB::table('images')
+                    ->where('products_id', $id)
+                    ->pluck('hash');
+        
+        foreach ($files as $file) {
+            $newHash = md5_file($file->getRealPath());
+
+            if (!$hashes->contains($newHash)) {
+                $uniqueFileName = uniqid("$user->name") . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('public/images', $uniqueFileName);
+                $imageUrl = asset("storage/images/{$uniqueFileName}");
+                Image::create([
+                    'name' => $uniqueFileName,
+                    'products_id' => $id,
+                    'link' => $imageUrl,
+                    'hash' => $newHash,
+                ]);
+            }
+        }
+    }
+
+    private function productValidation($id){
         $validator1 = validator(['id' => $id], [
             'id' => 'required|numeric|min:1',
         ]);
@@ -47,22 +72,18 @@ class ProductController extends Controller
         }
     }
     public function addProduct(ProductRequest $request){
-
         $files = $request->file('images');
-        $categories = $request->input('categories');
-        $sizes = $request->input('sizes');
-
+        $categories = $request->categories;
+        $sizes = $request->sizes;
         $created = Product::create([
-            'name' => $request->input('name'),
-            'description'=> $request->input('description'),
-            'price'=> $request->input('price'),
-            'gender'=> $request->input('gender'),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-            'colors_id' => (int) $request->input('brand_id'),
-            'brands_id' => (int) $request->input('color_id')
+            'name' => $request->name,
+            'description'=> $request->description,
+            'price'=> $request->price,
+            'gender'=> $request->gender,
+            'colors_id' => (int) $request->brand_id,
+            'brands_id' => (int) $request->color_id
         ]);
-        
+            
         $this->handleFiles($files, $created->id);
         $created->categories()->sync($categories);
         $created->sizes()->sync($sizes);
@@ -75,7 +96,7 @@ class ProductController extends Controller
         $request->validate([
             "page" => ['integer', 'min:1']
         ]);
-        $perPage = $request->input('page', 10);
+        $perPage = $request->page ?? 10;
         $products = Product::with(['color','brand','images','categories','sizes', 'ratings'])
                     ->paginate($perPage);
         
@@ -83,26 +104,24 @@ class ProductController extends Controller
     }
 
     public function getProduct($id){
-        $result = $this->_productValidation($id);
+        $result = $this->productValidation($id);
         
         if($result) return $result;
 
         $product = Product::with(['color','brand','images','categories','sizes', 'ratings'])->find($id);
-    
         return response()->json($product,200);
     }
 
     public function updateProduct(UpdateProductRequest $request){
-        
-        $id = $request->input('id');
+        $id = $request->id;
         $files = $request->file('images');
-        $categories = $request->input('categories');
-        $sizes = $request->input('sizes');
+        $categories = $request->categories;
+        $sizes = $request->sizes;
 
         $numOfImages = Image::where('products_id', '=', $id)->count();
         $addedFiles = count($files);
         if($numOfImages === 5) return response()->json(["message" => "You have 5 images stored, you can add only 0 more."]);
-        else if($numOfImages + $addedFiles > 5){
+        if($numOfImages + $addedFiles > 5){
             $difference = 5 - $numOfImages;
             return response()->json([
                 "message" => "You have $numOfImages images stored, you can add only $difference more."
@@ -112,28 +131,28 @@ class ProductController extends Controller
         $product = Product::find($id);
         
         $product->update([
-            'name' => $request->input('name'),
-            'description'=> $request->input('description'),
-            'price'=> $request->input('price'),
-            'gender'=> $request->input('gender'),
-            'updated_at' => Carbon::now(),
-            'colors_id' => (int) $request->input('brand_id'),
-            'brands_id' => (int) $request->input('color_id')
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'gender' => $request->gender,
+            'colors_id' => (int) $request->brand_id,
+            'brands_id' => (int) $request->color_id
         ]);
-        $this->handleFiles($files,$product->id);
-
+    
+        $this->updateFiles($files, $id);
+        
         $product->categories()->sync($categories);
         $product->sizes()->sync($sizes);
 
         $product->load(['color', 'brand', 'images', 'categories', 'sizes']);
         return response()->json([
             'message' => "Successfully updated product.",
-            $product
+            'data' => $product
         ],200);
     }
 
     public function deleteProduct($id){
-        $result = $this->_productValidation($id);
+        $result = $this->productValidation($id);
         
         if($result) return $result;
 
@@ -175,7 +194,7 @@ class ProductController extends Controller
             return response()->json(["message" => "You can't delete the last image"],403);
         }
 
-        $filePath = 'images/' . $image->name;
+        $filePath = 'public/images/' . $image->name;
         $image->delete();
         Storage::delete($filePath);
 
@@ -185,10 +204,9 @@ class ProductController extends Controller
     public function rateProduct(RateProductRequest $request){
         $user = Auth::user();
 
-        $condition = DB::table('products_ratings')
-                        ->where('products_id', $request->product_id)
-                        ->where('users_id', $user->id)
-                        ->exists();
+        $condition = ProductRating::where('products_id', $request->product_id)
+                                    ->where('users_id', $user->id)
+                                    ->exists();
         if ($condition) {
             $rating = ProductRating::where('users_id', $user->id)
                         ->where('products_id', $request->product_id)

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'id' => ['integer', 'min:1', 'exists:products,id'],
-            'name' => ['required', 'string', 'max:55', 'unique:products,name'],
+            'name' => ['required', 'string', 'max:55', Rule::unique('products', 'name')->ignore($this->id)],
             'price' => ['required', 'integer'],
             'description' => ['required', 'string'],
             'gender' => ['required', 'string', 'in:woman,man,children'],
@@ -33,16 +34,14 @@ class UpdateProductRequest extends FormRequest
             'categories' => ['required','array'],
             'categories.*' => ['required', 'integer', 'exists:categories,id'],
             'sizes' => ['required','array'],
-            //'sizes.*.amount' => ['required','integer','min:0'],
-            'sizes.*.quantitty' => ['required','integer','min:0'],
-            //'sizes.*.size_id' => ['required','integer','exists:sizes,id']
+            'sizes.*.quantity' => ['required','integer','min:0'],
             'sizes.*.sizes_id' => ['required','integer','exists:sizes,id']
         ];
     }
     public function messages(): array
     {
         return [
-            'images.required' => 'You must add new image to product.'
+            'images.required' => 'This field could not be empty.'
         ];
     }
 }
