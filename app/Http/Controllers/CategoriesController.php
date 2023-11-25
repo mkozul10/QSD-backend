@@ -15,9 +15,7 @@ class CategoriesController extends Controller
                 ->select('*')
                 ->get();
 
-        return response()->json([
-            $categories
-        ],200);            
+        return response()->json($categories,200);            
     }
 
     public function addCategory(Request $request){

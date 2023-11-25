@@ -16,7 +16,9 @@ class Product extends Model
         'gender',
         'colors_id',
         'brands_id',
-        'description'
+        'description',
+        'avg_rating',
+        'total_rating'
     ];
     public function color(){
         return $this->belongsTo(Color::class, 'colors_id');

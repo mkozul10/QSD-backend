@@ -15,9 +15,7 @@ class BrandController extends Controller
                 ->select('*')
                 ->get();
 
-        return response()->json([
-            $brands
-        ],200);            
+        return response()->json($brands,200);            
     }
 
     public function addBrand(Request $request){
