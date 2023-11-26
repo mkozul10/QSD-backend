@@ -11,6 +11,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Middleware\Authorization;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FilterController;
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,7 @@ Route::post('/resetPassword', [AuthController::class,'resetPassword']);
 
 //filter
 Route::get('/filterProducts', [FilterController::class,'filter']);
+Route::post('/search', [SearchController::class,'search']);
 
 //endpoints for sizes, colors, categories and brands GET methods
 Route::get('/sizes', [SizeController::class, 'sizes']);
