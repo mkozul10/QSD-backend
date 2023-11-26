@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -54,13 +55,16 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
+    //favorite endpoints
+    Route::middleware('isBanned')->post('/handleFavorite', [FavoriteController::class,'handleFavorite']);
+    Route::middleware('isBanned')->get('/getFavorites', [FavoriteController::class,'getFavorites']);
     //rating products
-    Route::post('/rateProduct', [ProductController::class,'rateProduct']);
+    Route::middleware('isBanned')->post('/rateProduct', [ProductController::class,'rateProduct']);
     //user endpoints
     Route::get('/getUser', [UserController::class, 'getUser']);
-    Route::post('/updateUser', [UserController::class, 'updateUser']);
+    Route::middleware('isBanned')->post('/updateUser', [UserController::class, 'updateUser']);
 
-    Route::middleware(['authorization'])->group(function () {
+    Route::middleware(['authorization', 'isBanned'])->group(function () {
 
         Route::post('/addSize', [SizeController::class, 'addSize']);
         Route::put('/updateSize', [SizeController::class, 'updateSize']);
