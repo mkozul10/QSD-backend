@@ -10,6 +10,7 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
 use App\Http\Middleware\Authorization;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FilterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,9 @@ Route::post('/register', [AuthController::class, 'Register']);
 Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/requestValidationKey', [AuthController::class,'requestValidationKey']);
 Route::post('/resetPassword', [AuthController::class,'resetPassword']);
+
+//filter
+Route::get('/filterProducts', [FilterController::class,'filter']);
 
 //endpoints for sizes, colors, categories and brands GET methods
 Route::get('/sizes', [SizeController::class, 'sizes']);
