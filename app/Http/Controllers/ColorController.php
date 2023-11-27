@@ -15,9 +15,7 @@ class ColorController extends Controller
                 ->select('*')
                 ->get();
 
-        return response()->json([
-            $colors
-        ],200);            
+        return response()->json($colors,200);            
     }
 
     public function addColor(Request $request){

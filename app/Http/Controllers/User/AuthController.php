@@ -101,6 +101,10 @@ class AuthController extends Controller
                 }
                 else return response()->json(["error" => "Invalid validation key."],400);
             } else {
+                DB::table('users_validation_keys')
+                    ->where('users_id', '=', $user[0]->id)
+                    ->select('*')
+                    ->delete();
                 $number = $this->generateNumber();
                 DB::table('users_validation_keys')
                     ->insert([

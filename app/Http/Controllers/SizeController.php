@@ -15,9 +15,7 @@ class SizeController extends Controller
                 ->select('*')
                 ->get();
 
-        return response()->json([
-            $sizes
-        ],200);            
+        return response()->json($sizes,200);            
     }
 
     public function addSize(Request $request){
