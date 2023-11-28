@@ -19,7 +19,8 @@ class Order extends Model
         'transaction_id',
         'price',
         'status',
-        'comment'
+        'comment',
+        'guest_email'
     ];
 
     protected $hidden = [
