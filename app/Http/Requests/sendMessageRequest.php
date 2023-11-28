@@ -25,8 +25,7 @@ class sendMessageRequest extends FormRequest
     {
         return [
             'name' => 'string|required',
-           // 'email' => ['required',Rule::unique('users'),'string'],
-            'email' => 'string|required',
+            'email' => 'string|required|email',
             'subject' => 'string|required',
             'message' => 'string|required',
             //treba omoguciti regex

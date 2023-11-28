@@ -32,14 +32,13 @@ class contactUsController extends Controller
             "name"=> $name,
             "email"=> $email,
             "subject"=> $subject,
-            "message"=> $message,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
+            "message"=> $message
+            
         ]);
 
         return response()->json([
-            "message" => "Message successfully sent",
-            "Message details" => ["Name"=> $name, "Message details"=>$created]
-        ]);
+            
+            "Message details"=>$created
+        ],200);
     }
 }

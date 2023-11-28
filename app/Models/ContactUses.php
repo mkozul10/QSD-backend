@@ -9,11 +9,13 @@ class ContactUses extends Model
 {
     use HasFactory;
 
+    protected $table = 'contact_uses';
+
     protected $fillable = [
         'email',
         'subject',
         'message',
-        'created_at',
-        'updated_at'
+        'name'
     ];
+    public $timestamps = true;
 }
