@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrderRequest extends FormRequest
 {
@@ -32,6 +33,7 @@ class OrderRequest extends FormRequest
             'products.*.products_id' => ['required', 'min:1', 'exists:products,id'],
             'products.*.sizes_id' => ['required', 'min:1', 'exists:sizes,id'],
             'products.*.quantity' => ['required', 'min:1'],
+            'guest_email' => ['email',Rule::unique('users', 'email')],
         ];
     }
 }
