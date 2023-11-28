@@ -9,6 +9,7 @@ use Stripe\PaymentIntent;
 use Stripe\Stripe;
 use App\Models\ProductSize;
 use App\Models\Order;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -31,7 +32,11 @@ class OrderController extends Controller
         return ['ids' => $result, 'price' => $price];
     }
     public function payment(OrderRequest $request){
-        $user = Auth::user();
+        $guestEmail = $request->guest_email;
+        if(!$guestEmail){
+            $user = auth('api')->user();
+            if($user->status === 0) return response()->json(['message' => 'You are banned'],401);
+        }
         $check = $this->checkForSizes($request->products);
         if(!is_array($check)) return $check;
         $amount = $check['price'];
@@ -50,23 +55,47 @@ class OrderController extends Controller
             return response()->json(['message' => 'Problems with payment'],400);
         }
 
-        $order = Order::create([
-            'address' => $request->address,
-            'city' => $request->city,
-            'zip_code' => $request->zip_code,
-            'phone' => $request->phone,
-            'users_id' => $user->id,
-            'transaction_id' => $paymentIntent->id,
-            'price' => $amount
-        ]);
+        if($guestEmail){
+            $order = Order::create([
+                'address' => $request->address,
+                'city' => $request->city,
+                'zip_code' => $request->zip_code,
+                'phone' => $request->phone,
+                'users_id' => 4, //id from created user from spam purposes, migration for making users_id
+                //nullable exists, it will run successfully on empty database
+                'transaction_id' => $paymentIntent->id,
+                'price' => $amount,
+                'guest_email' => $guestEmail,
+                'comment' => ''
+            ]);
+        } else {
+            $order = Order::create([
+                'address' => $request->address,
+                'city' => $request->city,
+                'zip_code' => $request->zip_code,
+                'phone' => $request->phone,
+                'users_id' => $user->id,
+                'transaction_id' => $paymentIntent->id,
+                'price' => $amount,
+                'comment' => ''
+            ]);
+        }
 
         foreach ($check['ids'] as $sizeId => $data) {
             ProductSize::where('id', $sizeId)->decrement('quantity', $data['quantity']);
         }
                     
         $order->products()->sync($check['ids']);
-        $order->load(['user','products','products.product']);
+        if($guestEmail) $order->load(['products','products.product']);
+        else $order->load(['user','products','products.product']);
         $order->products;
+        if($guestEmail){
+            Mail::send('mail.guestEmail',['data' => $order,'user' => $guestEmail], function ($message) use ($guestEmail) {
+                $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
+                        ->to($guestEmail) 
+                        ->subject('QSD Verification code');
+            });
+        }
 
         return response()->json([
             "message" => "Order successfully added.",
