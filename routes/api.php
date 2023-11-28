@@ -49,6 +49,8 @@ Route::get('/brands', [BrandController::class, 'brands']);
 Route::get('/getProducts', [ProductController::class,'getProducts']);
 Route::get('/getProduct/{id}', [ProductController::class,'getProduct']);
 
+Route::middleware(['checkForGuest'])->post('/payment', [OrderController::class, 'payment']);
+
 
 Route::get('/users', [UserController::class, 'users']);
 Route::middleware(['auth:api'])->group(function () {
@@ -62,7 +64,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware('isBanned')->post('/rateProduct', [ProductController::class,'rateProduct']);
 
 
-    Route::middleware('isBanned')->post('/payment', [OrderController::class, 'payment']);
     Route::middleware('isBanned')->get('/getOrdersPerUser', [OrderController::class, 'getOrdersPerUser']);
 
 
