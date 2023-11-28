@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Models\Role;
+use Illuminate\Support\Facades\Schema;
 
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -72,5 +73,16 @@ class User extends Authenticatable
 
     public function validationKeys(){
         return $this->hasMany(UsersValidationKeys::class,'users_id');
+    }
+
+    public function favorites(){
+        return $this->belongsToMany(Product::class, 'favorites', 'users_id', 'products_id')
+                    ->with(['color', 'brand', 'images', 'categories', 'sizes'])
+                    ->withPivot(['created_at', 'updated_at']);
+    }
+    public static function columns()
+    {
+        $tableName = with(new static)->getTable();
+        return Schema::getColumnListing($tableName);
     }
 }
