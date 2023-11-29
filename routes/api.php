@@ -10,8 +10,12 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\UserController;
+
+use App\Http\Controllers\contactUsController;
+
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\SearchController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +57,7 @@ Route::middleware(['checkForGuest'])->post('/payment', [OrderController::class, 
 
 
 Route::get('/users', [UserController::class, 'users']);
+Route::post('/sendMessage', [contactUsController::class,'sendMessage']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
