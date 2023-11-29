@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
+
+    private function sendEmail($order, $email){
+        Mail::send('mail.guestEmail',['data' => $order,'user' => $email], function ($message) use ($email) {
+            $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
+                    ->to($email) 
+                    ->subject('QSD Order details');
+        });
+    }
     private function checkForSizes($products){
         $result = [];
         $price = 0;
@@ -61,12 +69,9 @@ class OrderController extends Controller
                 'city' => $request->city,
                 'zip_code' => $request->zip_code,
                 'phone' => $request->phone,
-                'users_id' => 4, //id from created user from spam purposes, migration for making users_id
-                //nullable exists, it will run successfully on empty database
                 'transaction_id' => $paymentIntent->id,
                 'price' => $amount,
                 'guest_email' => $guestEmail,
-                'comment' => ''
             ]);
         } else {
             $order = Order::create([
@@ -77,7 +82,6 @@ class OrderController extends Controller
                 'users_id' => $user->id,
                 'transaction_id' => $paymentIntent->id,
                 'price' => $amount,
-                'comment' => ''
             ]);
         }
 
@@ -89,13 +93,8 @@ class OrderController extends Controller
         if($guestEmail) $order->load(['products','products.product']);
         else $order->load(['user','products','products.product']);
         $order->products;
-        if($guestEmail){
-            Mail::send('mail.guestEmail',['data' => $order,'user' => $guestEmail], function ($message) use ($guestEmail) {
-                $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
-                        ->to($guestEmail) 
-                        ->subject('QSD Verification code');
-            });
-        }
+        if($guestEmail) $this->sendEmail($order,$guestEmail);
+        else $this->sendEmail($order,$user->email);
 
         return response()->json([
             "message" => "Order successfully added.",
