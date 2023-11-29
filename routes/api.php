@@ -11,8 +11,12 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
 use App\Http\Middleware\Authorization;
 use App\Http\Controllers\UserController;
+
+use App\Http\Controllers\contactUsController;
+
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\SearchController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +55,7 @@ Route::get('/getProducts', [ProductController::class,'getProducts']);
 Route::get('/getProduct/{id}', [ProductController::class,'getProduct']);
 
 Route::get('/users', [UserController::class, 'users']);
+Route::post('/sendMessage', [contactUsController::class,'sendMessage']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
