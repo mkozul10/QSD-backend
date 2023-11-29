@@ -15,4 +15,12 @@ class ProductSize extends Model
         'sizes_id',
         'quantity'
     ];
+
+    public function product(){
+        return $this->belongsTo(Product::class, 'products_id');
+    }
+
+    public function orderProductSizes(){
+        return $this->belongsTo(OrderProductSizes::class,'products_sizes_id');
+    }
 }

@@ -10,10 +10,6 @@ use Laravel\Passport\HasApiTokens;
 use App\Models\Role;
 use Illuminate\Support\Facades\Schema;
 
-
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -24,14 +20,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-       /*
-        'name',
-        'surname',
-        'email',
-        'password',
-        'roles_id'
-        */
-        
         'name',
         'surname',
         'email',
@@ -84,5 +72,9 @@ class User extends Authenticatable
     {
         $tableName = with(new static)->getTable();
         return Schema::getColumnListing($tableName);
+    }
+
+    public function orders(){
+        return $this->hasMany(Order::class,'users_id');
     }
 }

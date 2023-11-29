@@ -1,15 +1,14 @@
 <?php
 
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\BrandController;
-use App\Http\Middleware\Authorization;
 use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\contactUsController;
@@ -34,25 +33,28 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 })
 */
 
-//auth endpoints
+
 Route::post('/register', [AuthController::class, 'Register']);
 Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/requestValidationKey', [AuthController::class,'requestValidationKey']);
 Route::post('/resetPassword', [AuthController::class,'resetPassword']);
 
-//filter
+
 Route::get('/filterProducts', [FilterController::class,'filter']);
 Route::post('/search', [SearchController::class,'search']);
 
-//endpoints for sizes, colors, categories and brands GET methods
+
 Route::get('/sizes', [SizeController::class, 'sizes']);
 Route::get('/colors', [ColorController::class, 'colors']);
 Route::get('/categories', [CategoriesController::class, 'categories']);
 Route::get('/brands', [BrandController::class, 'brands']);
 
-//product GET methods
+
 Route::get('/getProducts', [ProductController::class,'getProducts']);
 Route::get('/getProduct/{id}', [ProductController::class,'getProduct']);
+
+Route::middleware(['checkForGuest'])->post('/payment', [OrderController::class, 'payment']);
+
 
 Route::get('/users', [UserController::class, 'users']);
 Route::post('/sendMessage', [contactUsController::class,'sendMessage']);
@@ -60,17 +62,21 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class,'Logout']);
     Route::post('/refresh', [AuthController::class,'Refresh']);
     Route::post('/changePassword', [AuthController::class,'changePassword']);
-    //favorite endpoints
+
+
     Route::middleware('isBanned')->post('/handleFavorite', [FavoriteController::class,'handleFavorite']);
     Route::middleware('isBanned')->get('/getFavorites', [FavoriteController::class,'getFavorites']);
-    //rating products
     Route::middleware('isBanned')->post('/rateProduct', [ProductController::class,'rateProduct']);
-    //user endpoints
+
+
+    Route::middleware('isBanned')->get('/getOrdersPerUser', [OrderController::class, 'getOrdersPerUser']);
+
+
     Route::get('/getUser', [UserController::class, 'getUser']);
     Route::middleware('isBanned')->post('/updateUser', [UserController::class, 'updateUser']);
 
-    Route::middleware(['authorization', 'isBanned'])->group(function () {
 
+    Route::middleware(['authorization', 'isBanned'])->group(function () {
         Route::post('/addSize', [SizeController::class, 'addSize']);
         Route::put('/updateSize', [SizeController::class, 'updateSize']);
         Route::delete('/deleteSize/{id}', [SizeController::class,'deleteSize']);
@@ -97,5 +103,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/updateRole', [UserController::class,'updateRole']);
 
         Route::post('/editRateProduct', [ProductController::class,'editRateProduct']);
+
+        Route::middleware('isBanned')->post('/updateState', [OrderController::class, 'updateState']);
+
+        Route::middleware('isBanned')->get('/getOrders', [OrderController::class, 'getOrders']);
 });
 });
