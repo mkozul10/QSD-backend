@@ -40,4 +40,8 @@ class Product extends Model
         return $this->belongsToMany(User::class,'products_ratings', 'products_id', 'users_id')
                     ->withPivot(['review', 'rating', 'created_at', 'updated_at']);
     }
+
+    public function product_sizes(){
+        return $this->hasMany(ProductSize::class,'products_id');
+    }
 }

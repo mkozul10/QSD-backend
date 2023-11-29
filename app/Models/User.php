@@ -8,10 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Models\Role;
-
-
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
@@ -23,14 +20,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-       /*
-        'name',
-        'surname',
-        'email',
-        'password',
-        'roles_id'
-        */
-        
         'name',
         'surname',
         'email',
@@ -72,5 +61,20 @@ class User extends Authenticatable
 
     public function validationKeys(){
         return $this->hasMany(UsersValidationKeys::class,'users_id');
+    }
+
+    public function favorites(){
+        return $this->belongsToMany(Product::class, 'favorites', 'users_id', 'products_id')
+                    ->with(['color', 'brand', 'images', 'categories', 'sizes'])
+                    ->withPivot(['created_at', 'updated_at']);
+    }
+    public static function columns()
+    {
+        $tableName = with(new static)->getTable();
+        return Schema::getColumnListing($tableName);
+    }
+
+    public function orders(){
+        return $this->hasMany(Order::class,'users_id');
     }
 }

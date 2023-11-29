@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
-class RegisterRequest extends FormRequest
+class ChangeStateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +22,9 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => 'required|max:55',
-            'last_name' => 'required|max:55',
-            'email' => ['required', 'unique:users,email','email'],
-            'password'=> ['required', 'confirmed', Password::min(8)->letters()->symbols()],
+            "order_id" => ["required","numeric","min:1", "exists:orders,id"],
+            "state" => ["required","numeric","in:1,2,3,4"],
+            "comment" => ["string"]
         ];
     }
 }
