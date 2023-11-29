@@ -28,7 +28,7 @@ class sendMessageRequest extends FormRequest
             'email' => 'string|required|email',
             'subject' => 'string|required',
             'message' => 'string|required',
-            //treba omoguciti regex
+            
         ];
     }
 }
