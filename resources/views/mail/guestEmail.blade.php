@@ -55,7 +55,7 @@
             <strong>Phone:</strong> {{ $data['phone'] }}<br>
             <strong>Transaction ID:</strong> {{ $data['transaction_id'] }}<br>
             <strong>Price:</strong> ${{ $data['price'] }}<br>
-            <strong>Guest Email:</strong> {{ $data['guest_email'] }}<br>
+            <strong>Email:</strong> {{ $user }}<br>
             <strong>Order ID:</strong> {{ $data['id'] }}<br>
             <strong>Created At:</strong> {{ $data['created_at'] }}<br>
             <strong>Updated At:</strong> {{ $data['updated_at'] }}<br>
