@@ -98,8 +98,8 @@ class ProductController extends Controller
             'description'=> $request->description,
             'price'=> $request->price,
             'gender'=> $request->gender,
-            'colors_id' => (int) $request->brand_id,
-            'brands_id' => (int) $request->color_id
+            'brands_id' => (int) $request->brand_id,
+            'colors_id' => (int) $request->color_id
         ]);
             
         $this->handleFiles($files, $created->id);
