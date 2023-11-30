@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Validation\Rules\Password;
+use App\Jobs\sendEmailOnLogin;
 
 class AuthController extends Controller
 {
@@ -113,11 +114,8 @@ class AuthController extends Controller
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
-                Mail::send('mail.validate',['number' => $number,'user' => $user[0]], function ($message) use ($user) {
-                    $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
-                        ->to($user[0]->email, $user[0]->name) 
-                        ->subject('QSD Verification code');
-                });
+                    
+                sendEmailOnLogin::dispatch($user[0]->name, $number, $user[0]->email);
 
                 return response()->json([
                     'message' => 'Verification code sent to your email'
@@ -161,11 +159,7 @@ class AuthController extends Controller
             'users_id' => $user->id
         ]);
 
-        Mail::send('mail.validate',['number' => $newKey,'user' => $user], function ($message) use ($user) {
-            $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
-                ->to($user->email, $user->name) 
-                ->subject('QSD Verification code');
-        });
+        sendEmailOnLogin::dispatch($user->name, $newKey, $user->email);
 
         return response()->json([
             "message" => "Validation key has been sent to your email address!"
