@@ -51,7 +51,7 @@
 <table>
     <tr>
         <td>
-            <p>Hello, {{$user->name}}</p>
+            <p>Hello, {{$user}}</p>
             <p class="verification-code">{{ $number }}</p>
             <p class="instructions">Please enter this code to verify your email.</p>
             <p class="additional-info">This verification code is valid and available for use for next 2 hours</p>
@@ -65,4 +65,4 @@
 </table>
 
 </body>
-</html>
+</html> 
