@@ -10,16 +10,13 @@ use Stripe\Stripe;
 use App\Models\ProductSize;
 use App\Models\Order;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\sendEmailOnOrder;
 
 class OrderController extends Controller
 {
 
     private function sendEmail($order, $email){
-        Mail::send('mail.guestEmail',['data' => $order,'user' => $email], function ($message) use ($email) {
-            $message->from('qsdwebshop@gmail.com', 'QSD WebShop')
-                    ->to($email) 
-                    ->subject('QSD Order details');
-        });
+        sendEmailOnOrder::dispatch($order, $email);
     }
     private function checkForSizes($products){
         $result = [];
